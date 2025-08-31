@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Substring Scramble - Educational String Matching Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1>Substring Scramble</h1>
+            <p class="subtitle">Learn String Matching Algorithms Through Gameplay</p>
+        </header>
+
+        <div class="game-controls">
+            <div class="difficulty-selector">
+                <label for="difficulty" class="form-label">Difficulty:</label>
+                <select id="difficulty" class="form-control">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            
+            <button id="startBtn" class="btn btn--primary">Start Game</button>
+            
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Score:</span>
+                    <span id="currentScore" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time:</span>
+                    <span id="timer" class="stat-value">60</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">High Score:</span>
+                    <span id="highScore" class="stat-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameArea" class="game-area hidden">
+            <div class="main-content">
+                <div class="text-section">
+                    <h3>Find the words in this text:</h3>
+                    <div id="mainText" class="main-text" role="region" aria-label="Text to search in"></div>
+                </div>
+                
+                <div class="search-section">
+                    <div class="form-group">
+                        <label for="searchInput" class="form-label">Unscramble and search for words:</label>
+                        <div class="search-input-group">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Type the unscrambled word here..." autocomplete="off">
+                            <button id="submitBtn" class="btn btn--primary">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="scrambled-words-section">
+                    <h3>Scrambled Words</h3>
+                    <div id="scrambledWordsList" class="scrambled-words-list" role="list" aria-label="List of scrambled words to find"></div>
+                    <div class="words-remaining">
+                        <span id="wordsRemaining">0</span> words remaining
+                    </div>
+                </div>
+
+                <div class="algorithm-section">
+                    <h3>Algorithm Visualizer</h3>
+                    <div id="algorithmVisualizer" class="algorithm-visualizer">
+                        <div class="visualization-area">
+                            <div id="visualText" class="visual-text"></div>
+                            <div id="visualPattern" class="visual-pattern"></div>
+                        </div>
+                        <div class="algorithm-stats">
+                            <div class="stat-row">
+                                <span class="algorithm-label">Horspool Comparisons:</span>
+                                <span id="horspoolComparisons" class="algorithm-value">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="algorithm-label">Naive Comparisons:</span>
+                                <span id="naiveComparisons" class="algorithm-value">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="algorithm-label">Time (ms):</span>
+                                <span id="searchTime" class="algorithm-value">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="algorithm-label">Efficiency Gain:</span>
+                                <span id="efficiencyGain" class="algorithm-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOverModal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="gameOverTitle">Game Over!</h2>
+                <div class="final-stats">
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <p>Words Found: <span id="wordsFound">0</span></p>
+                    <p id="newHighScore" class="hidden">🎉 New High Score!</p>
+                </div>
+                <div class="modal-actions">
+                    <button id="playAgainBtn" class="btn btn--primary">Play Again</button>
+                    <button id="closeModalBtn" class="btn btn--secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
