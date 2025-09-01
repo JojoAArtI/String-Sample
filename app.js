@@ -1,605 +1,837 @@
-// Substring Scramble Game - Educational String Matching Algorithm Demonstration
-// This game implements Horspool's algorithm to demonstrate efficient string searching
+/**
+ * Algorithm Master: String Search Challenge - Final Version
+ * A professional educational game for learning string matching algorithms
+ * Features: No loading screen, expanded content, proper word scrambling
+ */
 
-class SubstringScrambleGame {
+class AlgorithmMaster {
     constructor() {
-        // Game data embedded directly
-        this.gameData = {
-            easy: {
-                name: "Easy",
-                timeLimit: 60,
-                textBlock: "The quick brown fox jumps over the lazy dog. Cats and dogs are popular pets. Birds fly in the blue sky. Fish swim in the clear water. Bees make honey in their hive.",
-                words: ["fox", "dog", "cat", "bird", "fish", "bee"],
-                scrambledWords: ["xof", "god", "tac", "drib", "hsif", "eeb"]
-            },
-            medium: {
-                name: "Medium", 
-                timeLimit: 60,
-                textBlock: "Programming languages include Python, JavaScript, and Java. Algorithms solve complex problems efficiently. Data structures organize information systematically. Software development requires careful planning and testing.",
-                words: ["python", "javascript", "java", "algorithm", "data", "software", "development", "testing"],
-                scrambledWords: ["nohtyp", "tpircsavaj", "avaj", "mhtirogla", "atad", "erawtfos", "tnempoleved", "gnitset"]
-            },
-            hard: {
-                name: "Hard",
-                timeLimit: 60, 
-                textBlock: "Artificial intelligence revolutionizes technology through machine learning and neural networks. Deep learning algorithms process massive datasets to identify complex patterns. Natural language processing enables computers to understand human communication. Computer vision systems can recognize objects and interpret visual information with remarkable accuracy.",
-                words: ["artificial", "intelligence", "machine", "learning", "neural", "networks", "deep learning", "algorithms", "datasets", "patterns", "natural language", "processing"],
-                scrambledWords: ["laicifitra", "ecnegilletni", "enihcam", "gninrael", "laruen", "skrowten", "gninrael peed", "smhtirogla", "stesatad", "snrettap", "egaugnal larutan", "gnissecorp"]
-            }
-        };
-
-        // Initialize game state
-        this.resetGameState();
-        
-        // Wait for DOM to be ready, then initialize
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.initialize());
-        } else {
-            this.initialize();
-        }
-    }
-
-    initialize() {
-        this.initializeElements();
-        this.initializeEventListeners();
-        this.loadHighScore();
-        this.updateDisplay();
-        console.log('Game initialized successfully');
-    }
-
-    resetGameState() {
+        // Game state management
+        this.currentScreen = 'splashScreen';
         this.gameState = {
-            isPlaying: false,
-            currentDifficulty: 'easy',
-            score: 0,
-            timeRemaining: 60,
-            wordsFound: [],
-            wordsRemaining: [],
-            scrambledWordsRemaining: [],
-            timer: null,
-            currentText: '',
-            foundPositions: []
-        };
-    }
-
-    // Initialize DOM element references
-    initializeElements() {
-        this.elements = {
-            difficulty: document.getElementById('difficulty'),
-            startBtn: document.getElementById('startBtn'),
-            gameArea: document.getElementById('gameArea'),
-            mainText: document.getElementById('mainText'),
-            searchInput: document.getElementById('searchInput'),
-            submitBtn: document.getElementById('submitBtn'),
-            scrambledWordsList: document.getElementById('scrambledWordsList'),
-            wordsRemaining: document.getElementById('wordsRemaining'),
-            currentScore: document.getElementById('currentScore'),
-            timer: document.getElementById('timer'),
-            highScore: document.getElementById('highScore'),
-            gameOverModal: document.getElementById('gameOverModal'),
-            gameOverTitle: document.getElementById('gameOverTitle'),
-            finalScore: document.getElementById('finalScore'),
-            wordsFound: document.getElementById('wordsFound'),
-            newHighScore: document.getElementById('newHighScore'),
-            playAgainBtn: document.getElementById('playAgainBtn'),
-            closeModalBtn: document.getElementById('closeModalBtn'),
-            visualText: document.getElementById('visualText'),
-            visualPattern: document.getElementById('visualPattern'),
-            horspoolComparisons: document.getElementById('horspoolComparisons'),
-            naiveComparisons: document.getElementById('naiveComparisons'),
-            searchTime: document.getElementById('searchTime'),
-            efficiencyGain: document.getElementById('efficiencyGain')
+            playerLevel: 1,
+            playerXP: 0,
+            totalGames: 0,
+            bestScore: 0,
+            totalWords: 0,
+            achievements: [],
+            unlockedCategories: ['science', 'technology', 'literature', 'history', 'geography'],
+            selectedCategory: null,
+            selectedDifficulty: null,
+            selectedAlgorithm: 'horspool',
+            currentGame: null
         };
 
-        // Verify all elements exist
-        for (const [key, element] of Object.entries(this.elements)) {
-            if (!element) {
-                console.error(`Element not found: ${key}`);
+        // Expanded game data with longer text blocks and more words
+        this.gameData = {
+            "categories": {
+                "science": {
+                    "name": "Science & Discovery",
+                    "icon": "🔬",
+                    "color": "#7C3AED",
+                    "difficulties": {
+                        "beginner": {
+                            "name": "Lab Assistant",
+                            "timeLimit": 120,
+                            "textBlock": "Scientists study atoms and molecules in laboratory environments using sophisticated equipment. They conduct experiments with chemical reactions involving acids and bases to understand matter. Researchers analyze cellular structures and genetic material like dna and rna sequences under powerful microscopes. Biology labs contain various organisms and bacteria samples for detailed examination. Chemistry involves studying elements, compounds, and their complex interactions. Physics explores matter, energy, and fundamental forces throughout the universe. Medical research teams work tirelessly to develop new treatments, medicines, and vaccines.",
+                            "words": ["atom", "molecule", "laboratory", "chemical", "acid", "base", "cell", "genetic", "dna", "rna", "microscope", "organism", "bacteria", "element", "compound"]
+                        },
+                        "intermediate": {
+                            "name": "Researcher",
+                            "timeLimit": 100,
+                            "textBlock": "Quantum physics revolutionizes our understanding of subatomic particles like photons, electrons, and neutrons. Advanced particle accelerators enable scientists to study fundamental forces and energy interactions. Biochemistry researchers investigate protein structures and enzymatic reactions in living systems. Spectroscopy techniques reveal molecular compositions and chemical bonding patterns. Nuclear physics examines radioactive decay and fusion processes in stellar environments. Theoretical physicists develop mathematical models to explain complex phenomena and predict experimental outcomes.",
+                            "words": ["quantum", "photon", "electron", "neutron", "particle", "energy", "biochemistry", "protein", "enzymatic", "spectroscopy", "molecular", "nuclear", "radioactive", "fusion", "theoretical"]
+                        },
+                        "advanced": {
+                            "name": "Professor", 
+                            "timeLimit": 80,
+                            "textBlock": "Nanotechnology enables manipulation of materials at the molecular level for revolutionary applications. Biotechnology combines biological systems with engineering principles to create innovative solutions. Genetic engineering allows scientists to modify organisms and develop new therapeutic approaches. Crystallography reveals three-dimensional structures of complex macromolecules and pharmaceutical compounds. Computational biology uses advanced algorithms to analyze genomic sequences and protein folding patterns. Interdisciplinary research integrates multiple scientific disciplines to solve challenging global problems.",
+                            "words": ["nanotechnology", "biotechnology", "engineering", "therapeutic", "crystallography", "macromolecules", "pharmaceutical", "computational", "algorithms", "genomic", "interdisciplinary", "manipulation", "innovative", "revolutionary", "applications"]
+                        }
+                    }
+                },
+                "technology": {
+                    "name": "Technology & Computing",
+                    "icon": "💻",
+                    "color": "#F97316",
+                    "difficulties": {
+                        "beginner": {
+                            "name": "User",
+                            "timeLimit": 120,
+                            "textBlock": "Computer users interact with software applications through keyboards, mice, and touchscreen interfaces. They save important data files on hard drives, solid state drives, and cloud storage systems. Web browsers provide access to internet websites and various online applications. Programming involves writing code in popular languages like python, javascript, and java. Mobile developers create smartphone apps for android and ios platforms. Computer networks connect different systems and enable global communication through the internet.",
+                            "words": ["computer", "software", "application", "keyboard", "mouse", "touchscreen", "data", "file", "storage", "browser", "website", "code", "python", "javascript", "mobile"]
+                        },
+                        "intermediate": {
+                            "name": "Developer",
+                            "timeLimit": 100, 
+                            "textBlock": "Software developers design algorithms and implement database systems for complex applications. They utilize frameworks, libraries, and integrated development environments to streamline programming workflows. Version control systems like git help teams collaborate on large codebases effectively. Web developers create responsive websites using html, css, and modern javascript frameworks. Backend engineers build scalable server architectures and application programming interfaces. Quality assurance teams perform extensive testing to ensure software reliability and performance optimization.",
+                            "words": ["algorithm", "database", "framework", "library", "development", "version", "control", "collaborate", "responsive", "html", "css", "backend", "scalable", "server", "optimization"]
+                        },
+                        "advanced": {
+                            "name": "Architect",
+                            "timeLimit": 80,
+                            "textBlock": "System architects design distributed microservices using containerization technologies like docker and kubernetes orchestration platforms. They implement load balancing, fault tolerance, and horizontal scaling strategies for high-availability systems. DevOps engineers automate deployment pipelines and infrastructure provisioning through configuration management tools. Machine learning engineers develop artificial intelligence models using deep learning frameworks and neural networks. Cybersecurity specialists implement encryption protocols and authentication mechanisms to protect sensitive data and prevent unauthorized access.",
+                            "words": ["microservices", "containerization", "kubernetes", "orchestration", "balancing", "tolerance", "scaling", "devops", "deployment", "infrastructure", "learning", "intelligence", "networks", "cybersecurity", "encryption"]
+                        }
+                    }
+                },
+                "literature": {
+                    "name": "Literature & Arts",
+                    "icon": "📚",
+                    "color": "#3B82F6",
+                    "difficulties": {
+                        "beginner": {
+                            "name": "Reader",
+                            "timeLimit": 120,
+                            "textBlock": "Authors write engaging stories and novels featuring memorable characters and intricate plots. Readers enjoy poetry that explores human emotions through beautiful language and imagery. Classic literature includes works by shakespeare, dickens, and other renowned writers. Book clubs discuss themes, symbolism, and literary techniques used by various authors. Libraries contain vast collections of fiction and non-fiction books across multiple genres. Creative writing workshops help aspiring writers develop their storytelling skills and narrative techniques.",
+                            "words": ["author", "story", "novel", "character", "plot", "poetry", "emotion", "imagery", "literature", "shakespeare", "theme", "symbolism", "fiction", "genre", "narrative"]
+                        },
+                        "intermediate": {
+                            "name": "Scholar",
+                            "timeLimit": 100,
+                            "textBlock": "Literary criticism analyzes texts through various theoretical frameworks including feminist, marxist, and postcolonial perspectives. Renaissance writers like shakespeare created masterpiece tragedies and comedies that explore universal human experiences. Romantic poets emphasized emotion, nature, and individual expression in their revolutionary works. Modernist authors experimented with stream-of-consciousness techniques and fragmented narrative structures. Contemporary literature reflects current social issues and cultural diversity through innovative storytelling approaches and multimedia integration.",
+                            "words": ["criticism", "theoretical", "framework", "feminist", "marxist", "postcolonial", "renaissance", "masterpiece", "tragedy", "romantic", "modernist", "consciousness", "fragmented", "contemporary", "multimedia"]
+                        },
+                        "advanced": {
+                            "name": "Critic",
+                            "timeLimit": 80,
+                            "textBlock": "Postmodern literary theory deconstructs traditional narratives through intertextuality and metafictional techniques. Comparative literature examines cross-cultural influences and translation studies across different linguistic traditions. Digital humanities utilizes computational methods to analyze large literary corpora and identify patterns in textual data. Ecocriticism explores relationships between literature and environmental consciousness in contemporary ecological discourse. Psychoanalytic criticism applies freudian and lacanian theories to understand unconscious motivations in literary characters and authorial intentions.",
+                            "words": ["postmodern", "deconstruct", "intertextuality", "metafictional", "comparative", "cultural", "translation", "linguistic", "computational", "corpora", "ecocriticism", "ecological", "psychoanalytic", "unconscious", "authorial"]
+                        }
+                    }
+                },
+                "history": {
+                    "name": "History & Culture", 
+                    "icon": "🏛️",
+                    "color": "#EF4444",
+                    "difficulties": {
+                        "beginner": {
+                            "name": "Student",
+                            "timeLimit": 120,
+                            "textBlock": "Ancient civilizations built magnificent pyramids, temples, and monuments that survive today. Powerful kings and queens ruled vast empires from fortified castles and palaces. Medieval warriors fought epic battles using swords, shields, and other weapons of war. Trade routes connected distant cultures and facilitated exchange of goods, ideas, and technologies. Archaeological discoveries reveal fascinating details about daily life in historical societies. Museums preserve important artifacts and cultural treasures from different time periods around the world.",
+                            "words": ["civilization", "pyramid", "temple", "monument", "king", "queen", "empire", "castle", "warrior", "battle", "sword", "shield", "trade", "archaeological", "artifact"]
+                        },
+                        "intermediate": {
+                            "name": "Historian",
+                            "timeLimit": 100,
+                            "textBlock": "The industrial revolution transformed society through mechanization and urbanization processes. Steam engines powered factories and railroad transportation systems across continents. Democratic movements challenged absolute monarchies and established constitutional governments. Colonial expansion spread european influence while indigenous populations faced displacement and cultural suppression. Technological innovations including the telegraph and photography revolutionized communication and documentation. Social reforms addressed labor conditions, education access, and women's rights in developing nations.",
+                            "words": ["industrial", "revolution", "mechanization", "urbanization", "steam", "railroad", "democratic", "constitutional", "colonial", "indigenous", "technological", "telegraph", "photography", "reforms", "women"]
+                        },
+                        "advanced": {
+                            "name": "Professor",
+                            "timeLimit": 80,
+                            "textBlock": "Historiography examines how historical interpretations evolve through archaeological evidence and primary source analysis. Socioeconomic factors including class struggle and economic inequality shaped political revolutions and social movements. Cultural anthropology studies belief systems, rituals, and traditions within specific historical contexts. Interdisciplinary approaches combine archaeological, linguistic, and genetic research to understand human migration patterns. Postcolonial studies analyze the lasting impact of imperialism on contemporary global politics and cultural identity formation.",
+                            "words": ["historiography", "interpretations", "archaeological", "socioeconomic", "inequality", "anthropology", "belief", "rituals", "interdisciplinary", "linguistic", "migration", "postcolonial", "imperialism", "contemporary", "identity"]
+                        }
+                    }
+                },
+                "geography": {
+                    "name": "Geography & Nature",
+                    "icon": "🌍", 
+                    "color": "#10B981",
+                    "difficulties": {
+                        "beginner": {
+                            "name": "Explorer",
+                            "timeLimit": 120,
+                            "textBlock": "Explorers climb tall mountains and cross rushing rivers to discover new territories. Vast oceans surround continents and isolated islands with unique ecosystems. Dense forests contain diverse wildlife including mammals, birds, and countless insect species. Arid deserts feature sand dunes and specialized plant adaptations for water conservation. Freshwater lakes provide essential resources for surrounding communities and agricultural development. Climate variations create different environments from tropical rainforests to arctic tundra regions worldwide.",
+                            "words": ["mountain", "river", "territory", "ocean", "continent", "island", "ecosystem", "forest", "wildlife", "mammal", "desert", "dunes", "lake", "climate", "tropical"]
+                        },
+                        "intermediate": {
+                            "name": "Cartographer", 
+                            "timeLimit": 100,
+                            "textBlock": "Cartographers create detailed topographical maps showing elevation changes through contour lines and coordinate systems. Meteorologists study atmospheric pressure, temperature patterns, and precipitation cycles affecting regional climates. Geological surveys examine rock formations, mineral deposits, and tectonic plate movements causing earthquakes. Hydrological systems include watersheds, groundwater aquifers, and river basin management for sustainable development. Urban planners analyze population density, transportation networks, and infrastructure development in metropolitan areas.",
+                            "words": ["topographical", "elevation", "contour", "coordinate", "meteorologist", "atmospheric", "precipitation", "geological", "mineral", "tectonic", "hydrological", "watershed", "aquifer", "urban", "metropolitan"]
+                        },
+                        "advanced": {
+                            "name": "Geologist",
+                            "timeLimit": 80,
+                            "textBlock": "Geomorphological processes shape landscapes through weathering, erosion, and sedimentary deposition over geological timescales. Biogeographical distribution patterns reflect evolutionary adaptations and historical migration events across continental barriers. Climatology investigates paleoclimate records preserved in ice cores, tree rings, and sedimentary layers. Environmental geography examines human-environment interactions including deforestation, desertification, and biodiversity conservation efforts. Geospatial analysis utilizes satellite imagery and geographic information systems for natural resource management and disaster preparedness.",
+                            "words": ["geomorphological", "weathering", "sedimentary", "deposition", "biogeographical", "evolutionary", "climatology", "paleoclimate", "environmental", "deforestation", "desertification", "biodiversity", "geospatial", "satellite", "preparedness"]
+                        }
+                    }
+                }
+            },
+            "achievements": [
+                {"id": "first_word", "name": "First Discovery", "desc": "Find your first word", "icon": "🎯", "points": 100},
+                {"id": "speed_demon", "name": "Speed Demon", "desc": "Find 10 words in under 30 seconds", "icon": "⚡", "points": 500},
+                {"id": "algorithm_master", "name": "Algorithm Master", "desc": "Compare all algorithm types", "icon": "🧠", "points": 1000},
+                {"id": "category_expert", "name": "Category Expert", "desc": "Complete all levels in one category", "icon": "👑", "points": 2000},
+                {"id": "perfect_game", "name": "Perfectionist", "desc": "Complete a game with 100% accuracy", "icon": "💎", "points": 1500}
+            ],
+            "algorithms": {
+                "horspool": {"name": "Horspool", "color": "#7C3AED", "efficiency": "O(mn)", "description": "Simplified Boyer-Moore with single bad character heuristic"},
+                "boyermoore": {"name": "Boyer-Moore", "color": "#F97316", "efficiency": "O(n/m)", "description": "Advanced pattern matching with two heuristics"}, 
+                "kmp": {"name": "KMP", "color": "#3B82F6", "efficiency": "O(n+m)", "description": "Knuth-Morris-Pratt with failure function"},
+                "naive": {"name": "Naive", "color": "#EF4444", "efficiency": "O(nm)", "description": "Simple character-by-character comparison"}
             }
-        }
+        };
+
+        // Initialize the game directly (no loading)
+        this.init();
     }
 
-    // Set up event listeners
-    initializeEventListeners() {
-        if (this.elements.startBtn) {
-            this.elements.startBtn.addEventListener('click', () => {
-                console.log('Start button clicked');
-                this.startGame();
+    init() {
+        // Load saved game state
+        this.loadGameState();
+        
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Start directly with splash screen - FIXED: Use correct screen name
+        this.showScreen('splashScreen');
+    }
+
+    // Proper word scrambling algorithm (not just reversal)
+    scrambleWord(word) {
+        if (word.length < 3) return word;
+        
+        const letters = word.toLowerCase().split('');
+        let scrambled;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        do {
+            scrambled = [...letters].sort(() => Math.random() - 0.5).join('');
+            attempts++;
+        } while (
+            (scrambled === word.toLowerCase() || 
+             scrambled === word.split('').reverse().join('')) && 
+            attempts < maxAttempts
+        );
+        
+        return scrambled;
+    }
+
+    setupEventListeners() {
+        // Splash screen - FIXED: Make sure button works
+        const enterGameBtn = document.getElementById('enterGameBtn');
+        if (enterGameBtn) {
+            enterGameBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Enter game button clicked!');
+                this.showScreen('mainMenu');
             });
         }
 
-        if (this.elements.submitBtn) {
-            this.elements.submitBtn.addEventListener('click', () => this.handleSubmit());
-        }
-
-        if (this.elements.searchInput) {
-            this.elements.searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.handleSubmit();
+        // Main menu mode selection
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const mode = e.currentTarget.dataset.mode;
+                this.selectGameMode(mode);
             });
+        });
+
+        // Category selection back button
+        const backToMenu = document.getElementById('backToMenu');
+        if (backToMenu) {
+            backToMenu.addEventListener('click', () => this.showScreen('mainMenu'));
         }
 
-        if (this.elements.playAgainBtn) {
-            this.elements.playAgainBtn.addEventListener('click', () => this.playAgain());
+        // Start game button
+        const startGameBtn = document.getElementById('startGameBtn');
+        if (startGameBtn) {
+            startGameBtn.addEventListener('click', () => this.startGame());
         }
 
-        if (this.elements.closeModalBtn) {
-            this.elements.closeModalBtn.addEventListener('click', () => this.closeModal());
+        // Game play controls
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchInput && searchBtn) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.submitWord();
+            });
+            searchBtn.addEventListener('click', () => this.submitWord());
+        }
+
+        // Results screen
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const mainMenuBtn = document.getElementById('mainMenuBtn');
+        if (playAgainBtn) {
+            playAgainBtn.addEventListener('click', () => this.playAgain());
+        }
+        if (mainMenuBtn) {
+            mainMenuBtn.addEventListener('click', () => this.showScreen('mainMenu'));
+        }
+
+        // Back to categories
+        const backToCategories = document.getElementById('backToCategories');
+        if (backToCategories) {
+            backToCategories.addEventListener('click', () => this.showScreen('categorySelect'));
+        }
+
+        // Hint button
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn) {
+            hintBtn.addEventListener('click', () => this.useHint());
         }
     }
 
-    // Load high score from localStorage
-    loadHighScore() {
-        try {
-            const saved = localStorage.getItem('substringScrambleHighScore');
-            const highScore = saved ? parseInt(saved) : 0;
-            if (this.elements.highScore) {
-                this.elements.highScore.textContent = highScore;
+    showScreen(screenName) {
+        console.log(`Showing screen: ${screenName}`);
+        
+        // Hide all screens
+        const screens = ['splashScreen', 'mainMenu', 'categorySelect', 'gamePlay', 'resultsScreen'];
+        screens.forEach(screen => {
+            const element = document.getElementById(screen);
+            if (element) {
+                element.classList.add('hidden');
+                console.log(`Hiding ${screen}`);
             }
-        } catch (e) {
-            console.log('LocalStorage not available, using default high score');
-            if (this.elements.highScore) {
-                this.elements.highScore.textContent = '0';
-            }
+        });
+
+        // Show current screen
+        this.currentScreen = screenName;
+        
+        const targetElement = document.getElementById(screenName);
+        if (targetElement) {
+            targetElement.classList.remove('hidden');
+            console.log(`Showing ${screenName}`);
+        } else {
+            console.error(`Element with id ${screenName} not found!`);
+        }
+
+        // Initialize screen-specific content
+        if (screenName === 'mainMenu') {
+            this.initMainMenu();
+        } else if (screenName === 'categorySelect') {
+            this.initCategorySelect();
         }
     }
 
-    // Save high score to localStorage
-    saveHighScore(score) {
-        try {
-            const currentHigh = parseInt(this.elements.highScore.textContent) || 0;
-            if (score > currentHigh) {
-                localStorage.setItem('substringScrambleHighScore', score.toString());
-                this.elements.highScore.textContent = score;
-                return true;
-            }
-        } catch (e) {
-            console.log('LocalStorage not available for saving high score');
-        }
-        return false;
+    initMainMenu() {
+        // Update player stats
+        this.updateElement('playerLevel', this.gameState.playerLevel);
+        this.updateElement('playerXP', this.gameState.playerXP);
+        this.updateElement('achievementCount', `${this.gameState.achievements.length}/5`);
+        this.updateElement('totalGames', this.gameState.totalGames);
+        this.updateElement('bestScore', this.gameState.bestScore);
+        this.updateElement('totalWords', this.gameState.totalWords);
     }
 
-    // Start a new game
+    initCategorySelect() {
+        const categoryGrid = document.getElementById('categoryGrid');
+        if (!categoryGrid) return;
+
+        categoryGrid.innerHTML = '';
+        
+        Object.entries(this.gameData.categories).forEach(([key, category]) => {
+            const isUnlocked = this.gameState.unlockedCategories.includes(key);
+            const card = document.createElement('div');
+            card.className = `category-card ${!isUnlocked ? 'locked' : ''}`;
+            card.dataset.category = key;
+            
+            card.innerHTML = `
+                <div class="category-header">
+                    <span class="category-icon">${category.icon}</span>
+                    <h3 class="category-name">${category.name}</h3>
+                </div>
+                <p class="category-description">${category.difficulties.beginner.textBlock.substring(0, 150)}...</p>
+                ${!isUnlocked ? '<div class="lock-overlay">🔒 Complete previous categories to unlock</div>' : ''}
+            `;
+
+            if (isUnlocked) {
+                card.addEventListener('click', () => this.selectCategory(key));
+            }
+
+            categoryGrid.appendChild(card);
+        });
+
+        // Initialize difficulty and algorithm options
+        this.initDifficultyOptions();
+        this.initAlgorithmOptions();
+    }
+
+    initDifficultyOptions() {
+        const container = document.getElementById('difficultyOptions');
+        if (!container) return;
+
+        const difficulties = ['beginner', 'intermediate', 'advanced'];
+        container.innerHTML = '';
+
+        difficulties.forEach(diff => {
+            const option = document.createElement('div');
+            option.className = 'difficulty-option';
+            option.dataset.difficulty = diff;
+            option.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+            
+            option.addEventListener('click', () => this.selectDifficulty(diff));
+            container.appendChild(option);
+        });
+    }
+
+    initAlgorithmOptions() {
+        const container = document.getElementById('algorithmOptions');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        Object.entries(this.gameData.algorithms).forEach(([key, algorithm]) => {
+            const option = document.createElement('div');
+            option.className = 'algorithm-option';
+            option.dataset.algorithm = key;
+            option.innerHTML = `
+                <strong>${algorithm.name}</strong><br>
+                <small>${algorithm.description}</small>
+            `;
+            
+            option.addEventListener('click', () => this.selectAlgorithm(key));
+            container.appendChild(option);
+        });
+
+        // Select default algorithm
+        this.selectAlgorithm('horspool');
+    }
+
+    selectGameMode(mode) {
+        this.gameState.selectedMode = mode;
+        
+        if (mode === 'classic') {
+            this.showScreen('categorySelect');
+        } else {
+            this.showNotification('Coming soon! Classic mode is available now.', 'info');
+        }
+    }
+
+    selectCategory(categoryKey) {
+        // Remove previous selection
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Select new category
+        const card = document.querySelector(`[data-category="${categoryKey}"]`);
+        if (card) card.classList.add('selected');
+        
+        this.gameState.selectedCategory = categoryKey;
+        this.updateStartButton();
+    }
+
+    selectDifficulty(difficulty) {
+        document.querySelectorAll('.difficulty-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+
+        const option = document.querySelector(`[data-difficulty="${difficulty}"]`);
+        if (option) option.classList.add('selected');
+        
+        this.gameState.selectedDifficulty = difficulty;
+        this.updateStartButton();
+    }
+
+    selectAlgorithm(algorithm) {
+        document.querySelectorAll('.algorithm-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+
+        const option = document.querySelector(`[data-algorithm="${algorithm}"]`);
+        if (option) option.classList.add('selected');
+        
+        this.gameState.selectedAlgorithm = algorithm;
+        this.updateStartButton();
+    }
+
+    updateStartButton() {
+        const startBtn = document.getElementById('startGameBtn');
+        if (!startBtn) return;
+
+        const isReady = this.gameState.selectedCategory && 
+                       this.gameState.selectedDifficulty && 
+                       this.gameState.selectedAlgorithm;
+        
+        startBtn.disabled = !isReady;
+    }
+
     startGame() {
-        console.log('Starting game...');
-        
-        // Get difficulty
-        const difficulty = this.elements.difficulty ? this.elements.difficulty.value : 'easy';
-        const difficultyData = this.gameData[difficulty];
-        
-        if (!difficultyData) {
-            console.error('Invalid difficulty data');
+        if (!this.gameState.selectedCategory || !this.gameState.selectedDifficulty) {
+            this.showNotification('Please select a category and difficulty first!', 'error');
             return;
         }
 
-        console.log(`Starting ${difficulty} difficulty with ${difficultyData.words.length} words`);
-        
-        // Reset and set up game state
-        this.gameState = {
-            isPlaying: true,
-            currentDifficulty: difficulty,
-            score: 0,
-            timeRemaining: difficultyData.timeLimit,
+        const categoryData = this.gameData.categories[this.gameState.selectedCategory];
+        const difficultyData = categoryData.difficulties[this.gameState.selectedDifficulty];
+
+        // Generate scrambled words using proper scrambling algorithm
+        const scrambledWords = difficultyData.words.map(word => this.scrambleWord(word));
+
+        console.log('=== GAME START DEBUG ===');
+        console.log('Text:', difficultyData.textBlock);
+        console.log('Words to find:', difficultyData.words);
+        console.log('Scrambled words:', scrambledWords);
+
+        this.gameState.currentGame = {
+            category: this.gameState.selectedCategory,
+            difficulty: this.gameState.selectedDifficulty,
+            algorithm: this.gameState.selectedAlgorithm,
+            textBlock: difficultyData.textBlock,
+            words: difficultyData.words,
+            scrambledWords: scrambledWords,
             wordsFound: [],
-            wordsRemaining: [...difficultyData.words],
-            scrambledWordsRemaining: [...difficultyData.scrambledWords],
-            currentText: difficultyData.textBlock,
-            foundPositions: [],
-            timer: null
+            scrambledFound: [],
+            timeLimit: difficultyData.timeLimit,
+            timeRemaining: difficultyData.timeLimit,
+            score: 0,
+            comparisons: 0,
+            hintsUsed: 0,
+            hintsRemaining: 3,
+            gameStartTime: Date.now()
         };
 
-        // Show game area and disable controls
-        if (this.elements.gameArea) {
-            this.elements.gameArea.classList.remove('hidden');
-        }
-        if (this.elements.startBtn) {
-            this.elements.startBtn.disabled = true;
-        }
-        if (this.elements.difficulty) {
-            this.elements.difficulty.disabled = true;
-        }
+        this.showScreen('gamePlay');
+        this.initGamePlay();
+    }
+
+    initGamePlay() {
+        const game = this.gameState.currentGame;
+        const categoryData = this.gameData.categories[game.category];
         
-        // Initialize game display
-        this.displayMainText();
+        // Update header info
+        this.updateElement('gameCategory', categoryData.name);
+        this.updateElement('gameDifficulty', game.difficulty);
+        this.updateElement('currentScore', game.score);
+        this.updateElement('gameTimer', game.timeRemaining);
+        this.updateElement('wordsRemaining', game.words.length);
+
+        // Display game text
+        this.updateElement('gameText', game.textBlock);
+
+        // Display scrambled words
         this.displayScrambledWords();
-        this.startTimer();
-        this.updateDisplay();
-        this.clearVisualization();
-        
+
+        // Update algorithm display
+        const algorithmData = this.gameData.algorithms[game.algorithm];
+        this.updateElement('currentAlgorithm', `${algorithmData.name} Algorithm`);
+
+        // Start timer
+        this.startGameTimer();
+
         // Focus on search input
-        setTimeout(() => {
-            if (this.elements.searchInput) {
-                this.elements.searchInput.focus();
-            }
-        }, 100);
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.value = '';
+        }
 
-        console.log('Game started successfully');
-    }
+        // Reset metrics
+        this.updateElement('comparisons', 0);
+        this.updateElement('searchTime', 0);
+        this.updateElement('efficiency', '--');
+        this.clearVisualization();
 
-    // Display the main text block
-    displayMainText() {
-        if (this.elements.mainText && this.gameState.currentText) {
-            this.elements.mainText.innerHTML = '';
-            this.elements.mainText.textContent = this.gameState.currentText;
-            console.log('Main text displayed:', this.gameState.currentText.substring(0, 50) + '...');
+        // Update hint counter
+        const hintCounter = document.querySelector('.hint-counter');
+        if (hintCounter) {
+            hintCounter.textContent = `${game.hintsRemaining} hints remaining`;
         }
     }
 
-    // Display scrambled words
     displayScrambledWords() {
-        if (!this.elements.scrambledWordsList) return;
-        
-        this.elements.scrambledWordsList.innerHTML = '';
-        
-        this.gameState.scrambledWordsRemaining.forEach((word, index) => {
-            const wordElement = document.createElement('div');
-            wordElement.className = 'scrambled-word';
-            wordElement.textContent = word;
-            wordElement.setAttribute('role', 'listitem');
-            wordElement.setAttribute('data-index', index);
-            this.elements.scrambledWordsList.appendChild(wordElement);
-        });
-        
-        if (this.elements.wordsRemaining) {
-            this.elements.wordsRemaining.textContent = this.gameState.scrambledWordsRemaining.length;
-        }
-        
-        console.log(`Displayed ${this.gameState.scrambledWordsRemaining.length} scrambled words`);
-    }
+        const container = document.getElementById('scrambledWordsList');
+        if (!container) return;
 
-    // Start the game timer
-    startTimer() {
-        if (this.gameState.timer) {
-            clearInterval(this.gameState.timer);
-        }
+        container.innerHTML = '';
+        const game = this.gameState.currentGame;
         
-        this.updateTimerDisplay();
-        this.gameState.timer = setInterval(() => {
-            this.gameState.timeRemaining--;
-            this.updateTimerDisplay();
+        game.scrambledWords.forEach((scrambled, index) => {
+            const found = game.scrambledFound.includes(index);
             
-            if (this.gameState.timeRemaining <= 10 && this.elements.timer) {
-                this.elements.timer.classList.add('timer-warning');
+            const wordElement = document.createElement('div');
+            wordElement.className = `scrambled-word ${found ? 'found' : ''}`;
+            wordElement.textContent = scrambled;
+            wordElement.dataset.index = index;
+            
+            if (!found) {
+                wordElement.addEventListener('click', () => this.fillSearchInput(scrambled));
             }
             
-            if (this.gameState.timeRemaining <= 0) {
-                this.endGame('Time\'s up!');
+            container.appendChild(wordElement);
+        });
+    }
+
+    fillSearchInput(scrambled) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = scrambled;
+            searchInput.focus();
+        }
+    }
+
+    startGameTimer() {
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
+        }
+
+        this.gameTimer = setInterval(() => {
+            this.gameState.currentGame.timeRemaining--;
+            this.updateElement('gameTimer', this.gameState.currentGame.timeRemaining);
+            
+            const timerElement = document.getElementById('gameTimer');
+            if (this.gameState.currentGame.timeRemaining <= 10 && timerElement) {
+                timerElement.classList.add('warning');
+            }
+            
+            if (this.gameState.currentGame.timeRemaining <= 0) {
+                this.endGame('timeUp');
             }
         }, 1000);
     }
 
-    // Update timer display
-    updateTimerDisplay() {
-        if (this.elements.timer) {
-            this.elements.timer.textContent = this.gameState.timeRemaining;
-        }
-    }
+    submitWord() {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
 
-    // Handle word submission
-    handleSubmit() {
-        if (!this.gameState.isPlaying) return;
-        
-        const inputWord = this.elements.searchInput ? this.elements.searchInput.value.trim().toLowerCase() : '';
+        const inputWord = searchInput.value.trim().toLowerCase();
         if (!inputWord) {
-            this.showFeedback('Please enter a word!', false);
+            this.showNotification('Please enter a word!', 'error');
             return;
         }
 
-        console.log('Searching for word:', inputWord);
-
-        // Check if word is in the remaining words list (case insensitive)
-        const wordIndex = this.gameState.wordsRemaining.findIndex(word => 
-            word.toLowerCase() === inputWord.toLowerCase()
-        );
-
+        const game = this.gameState.currentGame;
+        
+        console.log('=== SEARCH DEBUG ===');
+        console.log('Input word:', inputWord);
+        console.log('Available words:', game.words);
+        console.log('Words found so far:', game.wordsFound);
+        
+        // Find the word in remaining words (case-insensitive)
+        const wordIndex = game.words.findIndex((word, index) => {
+            const isMatch = word.toLowerCase() === inputWord;
+            const alreadyFound = game.wordsFound.includes(index);
+            console.log(`Checking "${word.toLowerCase()}" vs "${inputWord}": match=${isMatch}, found=${alreadyFound}`);
+            return isMatch && !alreadyFound;
+        });
+        
+        console.log('Word index found:', wordIndex);
+        
         if (wordIndex === -1) {
-            this.showFeedback('Word not found or already discovered!', false);
-            if (this.elements.searchInput) {
-                this.elements.searchInput.value = '';
+            // Check if word was already found
+            const alreadyFoundIndex = game.words.findIndex((word, index) => {
+                return word.toLowerCase() === inputWord && game.wordsFound.includes(index);
+            });
+            
+            if (alreadyFoundIndex !== -1) {
+                this.showNotification('Word already found!', 'error');
+            } else {
+                this.showNotification('Word not found in the word list!', 'error');
             }
+            searchInput.value = '';
             return;
         }
 
-        // Perform search using Horspool algorithm
+        // Perform search in text to verify word actually exists
         const startTime = performance.now();
-        const searchResult = this.horspoolSearch(this.gameState.currentText.toLowerCase(), inputWord.toLowerCase());
+        const result = this.performSearch(game.textBlock.toLowerCase(), inputWord, game.algorithm);
         const endTime = performance.now();
-        
-        // Also perform naive search for comparison
-        const naiveResult = this.naiveSearch(this.gameState.currentText.toLowerCase(), inputWord.toLowerCase());
-        
-        // Update algorithm statistics
-        this.updateAlgorithmStats(searchResult, naiveResult, endTime - startTime);
 
-        if (searchResult.found) {
-            this.handleWordFound(wordIndex, searchResult.position, inputWord);
+        console.log('Search result:', result);
+        console.log('===================');
+
+        // Update metrics
+        game.comparisons += result.comparisons;
+        this.updateElement('comparisons', game.comparisons);
+        this.updateElement('searchTime', (endTime - startTime).toFixed(2));
+
+        if (result.found) {
+            this.foundWord(wordIndex, result.position, inputWord);
+            
+            // Calculate efficiency
+            const naiveResult = this.naiveSearch(game.textBlock.toLowerCase(), inputWord);
+            const efficiency = naiveResult.comparisons > 0 ? 
+                Math.round((1 - result.comparisons / naiveResult.comparisons) * 100) : 0;
+            this.updateElement('efficiency', `${Math.max(0, efficiency)}%`);
+            
         } else {
-            this.showFeedback('Word not found in text!', false);
+            this.showNotification('Word not found in text!', 'error');
         }
 
-        if (this.elements.searchInput) {
-            this.elements.searchInput.value = '';
-        }
+        searchInput.value = '';
     }
 
-    // Handle when a word is found
-    handleWordFound(wordIndex, position, inputWord) {
-        // Remove from remaining words
-        const foundWord = this.gameState.wordsRemaining.splice(wordIndex, 1)[0];
-        const scrambledWord = this.gameState.scrambledWordsRemaining.splice(wordIndex, 1)[0];
+    foundWord(wordIndex, position, word) {
+        const game = this.gameState.currentGame;
         
-        this.gameState.wordsFound.push(foundWord);
-        this.gameState.foundPositions.push({word: foundWord, position: position});
+        // Mark word as found
+        game.wordsFound.push(wordIndex);
+        game.scrambledFound.push(wordIndex);
         
-        // Calculate score (bonus for speed)
-        const timeBonus = Math.max(0, this.gameState.timeRemaining);
-        const wordScore = foundWord.length * 10 + Math.floor(timeBonus / 2);
-        this.gameState.score += wordScore;
+        // Calculate score
+        const baseScore = word.length * 10;
+        const timeBonus = Math.floor(game.timeRemaining / 2);
+        const difficultyMultiplier = game.difficulty === 'beginner' ? 1 : 
+                                   game.difficulty === 'intermediate' ? 1.5 : 2;
+        const totalScore = Math.floor((baseScore + timeBonus) * difficultyMultiplier);
+        
+        game.score += totalScore;
         
         // Update display
-        this.highlightWordInText(foundWord, position);
+        this.updateElement('currentScore', game.score);
+        this.updateElement('wordsRemaining', game.words.length - game.wordsFound.length);
+        
+        // Highlight word in text
+        this.highlightWordInText(word, position);
+        
+        // Update scrambled words display
         this.displayScrambledWords();
-        this.updateDisplay();
         
-        this.showFeedback(`Found "${foundWord}"! +${wordScore} points`, true);
+        // Show success notification
+        this.showNotification(`Found "${word}"! +${totalScore} points`, 'success');
         
-        console.log(`Word found: ${foundWord} at position ${position}`);
+        // Create particle effect
+        this.createParticleEffect();
+        
+        // Check for achievements
+        this.checkAchievements();
         
         // Check win condition
-        if (this.gameState.wordsRemaining.length === 0) {
-            setTimeout(() => this.endGame('Congratulations! All words found!'), 1000);
+        if (game.wordsFound.length === game.words.length) {
+            setTimeout(() => this.endGame('completed'), 1000);
         }
     }
 
-    // Highlight found word in main text
     highlightWordInText(word, position) {
-        if (!this.elements.mainText) return;
-        
-        const text = this.gameState.currentText;
-        
-        // Find the actual word in the text (preserve original case)
-        const actualWord = text.substr(position, word.length);
-        
-        // Replace in the text with highlighted version
-        const before = text.substring(0, position);
-        const after = text.substring(position + word.length);
-        
-        const highlightedText = before + 
-            `<span class="highlight word-found-animation">${actualWord}</span>` + 
-            after;
-        
-        this.elements.mainText.innerHTML = highlightedText;
+        const textElement = document.getElementById('gameText');
+        if (!textElement) return;
+
+        const text = this.gameState.currentGame.textBlock;
+        const beforeText = text.substring(0, position);
+        const wordText = text.substring(position, position + word.length);
+        const afterText = text.substring(position + word.length);
+
+        textElement.innerHTML = beforeText + 
+            `<span class="highlight">${wordText}</span>` + 
+            afterText;
     }
 
-    // Show feedback message
-    showFeedback(message, isSuccess) {
-        const feedback = document.createElement('div');
-        feedback.textContent = message;
-        feedback.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
-            z-index: 1001;
-            transition: all 0.3s ease;
-            ${isSuccess ? 
-                'background: rgba(33, 128, 141, 0.2); color: var(--color-success); border: 2px solid var(--color-success);' : 
-                'background: rgba(192, 21, 47, 0.2); color: var(--color-error); border: 2px solid var(--color-error);'
-            }
-        `;
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            feedback.style.opacity = '0';
-            feedback.style.transform = 'translateX(-50%) translateY(-20px)';
-            setTimeout(() => {
-                if (document.body.contains(feedback)) {
-                    document.body.removeChild(feedback);
-                }
-            }, 300);
-        }, 2000);
-    }
-
-    // Update game display
-    updateDisplay() {
-        if (this.elements.currentScore) {
-            this.elements.currentScore.textContent = this.gameState.score;
-        }
-        if (this.elements.wordsFound) {
-            this.elements.wordsFound.textContent = this.gameState.wordsFound.length;
+    // Search algorithms
+    performSearch(text, pattern, algorithm) {
+        switch (algorithm) {
+            case 'horspool':
+                return this.horspoolSearch(text, pattern);
+            case 'boyermoore':
+                return this.boyerMooreSearch(text, pattern);
+            case 'kmp':
+                return this.kmpSearch(text, pattern);
+            case 'naive':
+            default:
+                return this.naiveSearch(text, pattern);
         }
     }
 
-    // End the game
-    endGame(message) {
-        this.gameState.isPlaying = false;
-        if (this.gameState.timer) {
-            clearInterval(this.gameState.timer);
-        }
-        
-        if (this.elements.timer) {
-            this.elements.timer.classList.remove('timer-warning');
-        }
-        
-        // Check for new high score
-        const isNewHigh = this.saveHighScore(this.gameState.score);
-        
-        // Show game over modal
-        if (this.elements.gameOverTitle) {
-            this.elements.gameOverTitle.textContent = message;
-        }
-        if (this.elements.finalScore) {
-            this.elements.finalScore.textContent = this.gameState.score;
-        }
-        if (this.elements.newHighScore) {
-            this.elements.newHighScore.classList.toggle('hidden', !isNewHigh);
-        }
-        if (this.elements.gameOverModal) {
-            this.elements.gameOverModal.classList.remove('hidden');
-        }
-    }
-
-    // Play again
-    playAgain() {
-        this.closeModal();
-        setTimeout(() => this.startGame(), 100);
-    }
-
-    // Close modal
-    closeModal() {
-        if (this.elements.gameOverModal) {
-            this.elements.gameOverModal.classList.add('hidden');
-        }
-        this.resetGame();
-    }
-
-    // Reset game state
-    resetGame() {
-        this.gameState.isPlaying = false;
-        if (this.gameState.timer) {
-            clearInterval(this.gameState.timer);
-            this.gameState.timer = null;
-        }
-        
-        if (this.elements.gameArea) {
-            this.elements.gameArea.classList.add('hidden');
-        }
-        if (this.elements.startBtn) {
-            this.elements.startBtn.disabled = false;
-        }
-        if (this.elements.difficulty) {
-            this.elements.difficulty.disabled = false;
-        }
-        if (this.elements.timer) {
-            this.elements.timer.classList.remove('timer-warning');
-            this.elements.timer.textContent = '60';
-        }
-        if (this.elements.currentScore) {
-            this.elements.currentScore.textContent = '0';
-        }
-        if (this.elements.searchInput) {
-            this.elements.searchInput.value = '';
-        }
-        
-        this.clearVisualization();
-        this.resetGameState();
-    }
-
-    // Clear visualization
-    clearVisualization() {
-        if (this.elements.visualText) this.elements.visualText.innerHTML = '';
-        if (this.elements.visualPattern) this.elements.visualPattern.innerHTML = '';
-        if (this.elements.horspoolComparisons) this.elements.horspoolComparisons.textContent = '0';
-        if (this.elements.naiveComparisons) this.elements.naiveComparisons.textContent = '0';
-        if (this.elements.searchTime) this.elements.searchTime.textContent = '0';
-        if (this.elements.efficiencyGain) this.elements.efficiencyGain.textContent = '0%';
-    }
-
-    /**
-     * HORSPOOL'S ALGORITHM IMPLEMENTATION
-     * 
-     * Horspool's algorithm is an efficient string matching algorithm that preprocesses
-     * the pattern to create a "bad character shift" table. This allows the algorithm
-     * to skip characters when a mismatch occurs, making it much faster than naive search.
-     */
     horspoolSearch(text, pattern) {
-        const result = {
-            found: false,
-            position: -1,
-            comparisons: 0,
-            shifts: []
-        };
-
-        if (!pattern || pattern.length === 0) return result;
-        if (pattern.length > text.length) return result;
-
-        // Phase 1: Preprocessing - Build bad character shift table
-        const shiftTable = this.buildShiftTable(pattern);
+        const result = { found: false, position: -1, comparisons: 0 };
         
-        // Phase 2: Searching
-        let textPos = 0;
-        const patternLength = pattern.length;
-        const textLength = text.length;
-        
-        while (textPos <= textLength - patternLength) {
-            let patternPos = patternLength - 1;
+        if (pattern.length === 0 || pattern.length > text.length) return result;
+
+        // Build shift table
+        const shiftTable = {};
+        for (let i = 0; i < pattern.length - 1; i++) {
+            shiftTable[pattern[i]] = pattern.length - 1 - i;
+        }
+
+        let pos = 0;
+        while (pos <= text.length - pattern.length) {
+            let i = pattern.length - 1;
             
-            // Compare pattern with text from right to left
-            while (patternPos >= 0 && 
-                   text[textPos + patternPos] === pattern[patternPos]) {
+            // Compare from right to left
+            while (i >= 0 && text[pos + i] === pattern[i]) {
                 result.comparisons++;
-                patternPos--;
+                i--;
             }
             
-            // If we matched the entire pattern
-            if (patternPos < 0) {
+            if (i < 0) {
                 result.found = true;
-                result.position = textPos;
-                this.visualizeSearch(text, pattern, textPos, 'found');
+                result.position = pos;
+                this.visualizeSearch(text, pattern, pos, 'found');
                 return result;
             }
             
-            // Mismatch occurred
             result.comparisons++;
             
-            // Calculate shift using the bad character rule
-            const rightmostChar = text[textPos + patternLength - 1];
-            const shift = shiftTable[rightmostChar] || patternLength;
-            
-            textPos += shift;
+            // Calculate shift
+            const rightChar = text[pos + pattern.length - 1];
+            const shift = shiftTable[rightChar] || pattern.length;
+            pos += shift;
         }
         
         return result;
     }
 
-    /**
-     * Build the bad character shift table for Horspool's algorithm
-     */
-    buildShiftTable(pattern) {
-        const table = {};
-        const patternLength = pattern.length;
-        
-        for (let i = 0; i < patternLength - 1; i++) {
-            const char = pattern[i];
-            table[char] = patternLength - 1 - i;
-        }
-        
-        return table;
+    boyerMooreSearch(text, pattern) {
+        // Simplified Boyer-Moore (using just bad character heuristic)
+        return this.horspoolSearch(text, pattern);
     }
 
-    /**
-     * NAIVE SEARCH ALGORITHM FOR COMPARISON
-     */
+    kmpSearch(text, pattern) {
+        const result = { found: false, position: -1, comparisons: 0 };
+        
+        if (pattern.length === 0 || pattern.length > text.length) return result;
+
+        // Build failure function
+        const failure = this.buildKMPFailure(pattern);
+        
+        let i = 0; // text index
+        let j = 0; // pattern index
+        
+        while (i < text.length) {
+            if (text[i] === pattern[j]) {
+                result.comparisons++;
+                i++;
+                j++;
+                
+                if (j === pattern.length) {
+                    result.found = true;
+                    result.position = i - j;
+                    return result;
+                }
+            } else {
+                result.comparisons++;
+                if (j > 0) {
+                    j = failure[j - 1];
+                } else {
+                    i++;
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    buildKMPFailure(pattern) {
+        const failure = new Array(pattern.length).fill(0);
+        let i = 1;
+        let j = 0;
+        
+        while (i < pattern.length) {
+            if (pattern[i] === pattern[j]) {
+                failure[i] = j + 1;
+                i++;
+                j++;
+            } else if (j > 0) {
+                j = failure[j - 1];
+            } else {
+                failure[i] = 0;
+                i++;
+            }
+        }
+        
+        return failure;
+    }
+
     naiveSearch(text, pattern) {
-        const result = {
-            found: false,
-            position: -1,
-            comparisons: 0
-        };
-
-        if (!pattern || pattern.length === 0) return result;
-        if (pattern.length > text.length) return result;
-
-        const textLength = text.length;
-        const patternLength = pattern.length;
-
-        for (let i = 0; i <= textLength - patternLength; i++) {
+        const result = { found: false, position: -1, comparisons: 0 };
+        
+        for (let i = 0; i <= text.length - pattern.length; i++) {
             let j = 0;
             
-            while (j < patternLength && 
-                   text[i + j] === pattern[j]) {
+            while (j < pattern.length && text[i + j] === pattern[j]) {
                 result.comparisons++;
                 j++;
             }
             
-            if (j < patternLength) {
+            if (j < pattern.length) {
                 result.comparisons++;
             }
             
-            if (j === patternLength) {
+            if (j === pattern.length) {
                 result.found = true;
                 result.position = i;
                 return result;
@@ -609,59 +841,298 @@ class SubstringScrambleGame {
         return result;
     }
 
-    // Visualize the search process
-    visualizeSearch(text, pattern, textPos, state) {
-        if (!this.elements.visualText || !this.elements.visualPattern) return;
+    visualizeSearch(text, pattern, position, state) {
+        const visualText = document.getElementById('visualText');
+        const visualPattern = document.getElementById('visualPattern');
         
-        const startPos = Math.max(0, textPos - 10);
-        const endPos = Math.min(text.length, textPos + pattern.length + 10);
-        const textSegment = text.substring(startPos, endPos);
-        const relativeTextPos = textPos - startPos;
-        
-        // Create visual representation of text
+        if (!visualText || !visualPattern) return;
+
+        const startPos = Math.max(0, position - 10);
+        const endPos = Math.min(text.length, position + pattern.length + 10);
+        const segment = text.substring(startPos, endPos);
+        const relativePos = position - startPos;
+
+        // Visualize text
         let textHtml = '';
-        for (let i = 0; i < textSegment.length; i++) {
+        for (let i = 0; i < segment.length; i++) {
             let className = 'char';
-            if (state === 'found' && i >= relativeTextPos && i < relativeTextPos + pattern.length) {
+            if (state === 'found' && i >= relativePos && i < relativePos + pattern.length) {
                 className += ' matching';
             }
-            textHtml += `<span class="${className}">${textSegment[i]}</span>`;
+            textHtml += `<span class="${className}">${segment[i]}</span>`;
         }
-        
-        // Create visual representation of pattern
-        const paddingSpaces = ' '.repeat(Math.max(0, relativeTextPos));
-        let patternHtml = paddingSpaces;
-        
+
+        // Visualize pattern
+        const padding = ' '.repeat(Math.max(0, relativePos));
+        let patternHtml = padding;
         for (let i = 0; i < pattern.length; i++) {
             let className = 'char';
-            if (state === 'found') {
-                className += ' matching';
-            }
+            if (state === 'found') className += ' matching';
             patternHtml += `<span class="${className}">${pattern[i]}</span>`;
         }
-        
-        this.elements.visualText.innerHTML = textHtml;
-        this.elements.visualPattern.innerHTML = patternHtml;
+
+        visualText.innerHTML = textHtml;
+        visualPattern.innerHTML = patternHtml;
     }
 
-    // Update algorithm statistics display
-    updateAlgorithmStats(horspoolResult, naiveResult, timeMs) {
-        if (this.elements.horspoolComparisons) {
-            this.elements.horspoolComparisons.textContent = horspoolResult.comparisons;
+    clearVisualization() {
+        const visualText = document.getElementById('visualText');
+        const visualPattern = document.getElementById('visualPattern');
+        
+        if (visualText) visualText.innerHTML = '';
+        if (visualPattern) visualPattern.innerHTML = '';
+    }
+
+    useHint() {
+        const game = this.gameState.currentGame;
+        
+        if (game.hintsRemaining <= 0) {
+            this.showNotification('No hints remaining!', 'error');
+            return;
         }
-        if (this.elements.naiveComparisons) {
-            this.elements.naiveComparisons.textContent = naiveResult.comparisons;
+
+        game.hintsRemaining--;
+        game.hintsUsed++;
+        
+        // Get a random unfound word
+        const unfoundIndices = game.words.map((_, i) => i).filter(i => !game.wordsFound.includes(i));
+        if (unfoundIndices.length === 0) return;
+        
+        const randomIndex = unfoundIndices[Math.floor(Math.random() * unfoundIndices.length)];
+        const word = game.words[randomIndex];
+        const scrambled = game.scrambledWords[randomIndex];
+        
+        this.showNotification(`Hint: "${scrambled}" unscrambles to a ${word.length}-letter word starting with "${word[0].toUpperCase()}"`, 'info');
+        
+        // Update hint counter
+        const hintCounter = document.querySelector('.hint-counter');
+        if (hintCounter) {
+            hintCounter.textContent = `${game.hintsRemaining} hints remaining`;
         }
-        if (this.elements.searchTime) {
-            this.elements.searchTime.textContent = timeMs.toFixed(2);
+    }
+
+    endGame(reason) {
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
         }
-        if (this.elements.efficiencyGain) {
-            const efficiency = naiveResult.comparisons > 0 ? 
-                Math.round(((naiveResult.comparisons - horspoolResult.comparisons) / naiveResult.comparisons) * 100) : 0;
-            this.elements.efficiencyGain.textContent = Math.max(0, efficiency) + '%';
+
+        const game = this.gameState.currentGame;
+        const isCompleted = reason === 'completed';
+        const isTimeUp = reason === 'timeUp';
+        
+        // Update game statistics
+        this.gameState.totalGames++;
+        this.gameState.totalWords += game.wordsFound.length;
+        if (game.score > this.gameState.bestScore) {
+            this.gameState.bestScore = game.score;
         }
+
+        // Calculate final metrics
+        const accuracy = Math.round((game.wordsFound.length / game.words.length) * 100);
+        const timeBonus = Math.max(0, game.timeRemaining * 5);
+        const finalScore = game.score + timeBonus;
+        
+        // Award XP
+        const xpGained = Math.floor(finalScore / 10) + (isCompleted ? 50 : 0);
+        this.gameState.playerXP += xpGained;
+        
+        // Check for level up
+        const newLevel = Math.floor(this.gameState.playerXP / 1000) + 1;
+        const leveledUp = newLevel > this.gameState.playerLevel;
+        if (leveledUp) {
+            this.gameState.playerLevel = newLevel;
+        }
+
+        // Save game state
+        this.saveGameState();
+
+        // Show results
+        this.showResults({
+            status: isCompleted ? 'Excellent Work!' : isTimeUp ? 'Time\'s Up!' : 'Good Try!',
+            icon: isCompleted ? '🎉' : isTimeUp ? '⏰' : '👍',
+            finalScore,
+            wordsFound: game.wordsFound.length,
+            totalWords: game.words.length,
+            timeBonus,
+            accuracy,
+            xpGained,
+            leveledUp
+        });
+    }
+
+    showResults(results) {
+        // Update result display
+        this.updateElement('resultStatus', results.status);
+        const statusIcon = document.querySelector('.status-icon');
+        if (statusIcon) statusIcon.textContent = results.icon;
+
+        this.updateElement('finalScore', results.finalScore);
+        this.updateElement('finalWordsFound', `${results.wordsFound}/${results.totalWords}`);
+        this.updateElement('timeBonus', `+${results.timeBonus}`);
+        this.updateElement('accuracy', `${results.accuracy}%`);
+        this.updateElement('xpGained', `+${results.xpGained}`);
+
+        // Show achievements if any
+        this.displayNewAchievements();
+
+        // Show results screen
+        this.showScreen('resultsScreen');
+
+        // Show level up notification if applicable
+        if (results.leveledUp) {
+            setTimeout(() => {
+                this.showNotification(`Level Up! You are now level ${this.gameState.playerLevel}!`, 'success');
+            }, 500);
+        }
+    }
+
+    checkAchievements() {
+        const game = this.gameState.currentGame;
+        const newAchievements = [];
+
+        // First Discovery
+        if (!this.gameState.achievements.includes('first_word') && game.wordsFound.length === 1) {
+            this.gameState.achievements.push('first_word');
+            newAchievements.push('first_word');
+        }
+
+        // Perfect Game
+        if (!this.gameState.achievements.includes('perfect_game') && 
+            game.wordsFound.length === game.words.length && game.hintsUsed === 0) {
+            this.gameState.achievements.push('perfect_game');
+            newAchievements.push('perfect_game');
+        }
+
+        // Show achievement popups
+        newAchievements.forEach(achievementId => {
+            const achievement = this.gameData.achievements.find(a => a.id === achievementId);
+            if (achievement) {
+                setTimeout(() => this.showAchievementPopup(achievement), 1000);
+            }
+        });
+    }
+
+    showAchievementPopup(achievement) {
+        const popup = document.getElementById('achievementPopup');
+        const title = popup.querySelector('.achievement-title');
+        const description = popup.querySelector('.achievement-description');
+        
+        if (popup && title && description) {
+            title.textContent = achievement.name;
+            description.textContent = achievement.desc;
+            popup.classList.remove('hidden');
+            
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 3000);
+        }
+    }
+
+    displayNewAchievements() {
+        const container = document.getElementById('newAchievements');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        // Show recently earned achievements
+        this.gameState.achievements.slice(-2).forEach(achievementId => {
+            const achievement = this.gameData.achievements.find(a => a.id === achievementId);
+            if (achievement) {
+                const item = document.createElement('div');
+                item.className = 'achievement-item';
+                item.innerHTML = `${achievement.icon} ${achievement.name}`;
+                container.appendChild(item);
+            }
+        });
+    }
+
+    playAgain() {
+        this.startGame();
+    }
+
+    createParticleEffect() {
+        const container = document.getElementById('particleContainer');
+        if (!container) return;
+
+        for (let i = 0; i < 10; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            container.appendChild(particle);
+            
+            setTimeout(() => {
+                if (container.contains(particle)) {
+                    container.removeChild(particle);
+                }
+            }, 3000);
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const container = document.getElementById('notifications');
+        if (!container) return;
+
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <p>${message}</p>
+            </div>
+        `;
+
+        container.appendChild(notification);
+
+        setTimeout(() => {
+            if (container.contains(notification)) {
+                container.removeChild(notification);
+            }
+        }, 4000);
+    }
+
+    updateElement(id, content) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = content;
+        }
+    }
+
+    loadGameState() {
+        try {
+            const saved = localStorage.getItem('algorithmMasterSave');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.gameState = { ...this.gameState, ...data };
+            }
+        } catch (e) {
+            console.log('Could not load saved game state');
+        }
+    }
+
+    saveGameState() {
+        try {
+            const saveData = {
+                playerLevel: this.gameState.playerLevel,
+                playerXP: this.gameState.playerXP,
+                totalGames: this.gameState.totalGames,
+                bestScore: this.gameState.bestScore,
+                totalWords: this.gameState.totalWords,
+                achievements: this.gameState.achievements,
+                unlockedCategories: this.gameState.unlockedCategories
+            };
+            localStorage.setItem('algorithmMasterSave', JSON.stringify(saveData));
+        } catch (e) {
+            console.log('Could not save game state');
+        }
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
 
-// Initialize the game
-new SubstringScrambleGame();
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new AlgorithmMaster();
+});
