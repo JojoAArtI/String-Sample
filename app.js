@@ -1136,3 +1136,4 @@ class AlgorithmMaster {
 document.addEventListener('DOMContentLoaded', () => {
     new AlgorithmMaster();
 });
+
