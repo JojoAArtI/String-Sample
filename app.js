@@ -1,12 +1,6 @@
-/**
- * Algorithm Master: String Search Challenge - Final Version
- * A professional educational game for learning string matching algorithms
- * Features: No loading screen, expanded content, proper word scrambling
- */
 
 class AlgorithmMaster {
     constructor() {
-        // Game state management
         this.currentScreen = 'splashScreen';
         this.gameState = {
             playerLevel: 1,
@@ -22,7 +16,6 @@ class AlgorithmMaster {
             currentGame: null
         };
 
-        // Expanded game data with longer text blocks and more words
         this.gameData = {
             "categories": {
                 "science": {
