@@ -170,11 +170,9 @@ class AlgorithmMaster {
         // Set up event listeners
         this.setupEventListeners();
         
-        // Start directly with splash screen - FIXED: Use correct screen name
         this.showScreen('splashScreen');
     }
 
-    // Proper word scrambling algorithm (not just reversal)
     scrambleWord(word) {
         if (word.length < 3) return word;
         
@@ -196,7 +194,6 @@ class AlgorithmMaster {
     }
 
     setupEventListeners() {
-        // Splash screen - FIXED: Make sure button works
         const enterGameBtn = document.getElementById('enterGameBtn');
         if (enterGameBtn) {
             enterGameBtn.addEventListener('click', (e) => {
@@ -206,7 +203,6 @@ class AlgorithmMaster {
             });
         }
 
-        // Main menu mode selection
         document.querySelectorAll('.mode-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const mode = e.currentTarget.dataset.mode;
@@ -214,13 +210,11 @@ class AlgorithmMaster {
             });
         });
 
-        // Category selection back button
         const backToMenu = document.getElementById('backToMenu');
         if (backToMenu) {
             backToMenu.addEventListener('click', () => this.showScreen('mainMenu'));
         }
 
-        // Start game button
         const startGameBtn = document.getElementById('startGameBtn');
         if (startGameBtn) {
             startGameBtn.addEventListener('click', () => this.startGame());
