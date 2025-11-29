@@ -220,7 +220,6 @@ class AlgorithmMaster {
             startGameBtn.addEventListener('click', () => this.startGame());
         }
 
-        // Game play controls
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
         if (searchInput && searchBtn) {
@@ -230,7 +229,6 @@ class AlgorithmMaster {
             searchBtn.addEventListener('click', () => this.submitWord());
         }
 
-        // Results screen
         const playAgainBtn = document.getElementById('playAgainBtn');
         const mainMenuBtn = document.getElementById('mainMenuBtn');
         if (playAgainBtn) {
@@ -246,7 +244,6 @@ class AlgorithmMaster {
             backToCategories.addEventListener('click', () => this.showScreen('categorySelect'));
         }
 
-        // Hint button
         const hintBtn = document.getElementById('hintBtn');
         if (hintBtn) {
             hintBtn.addEventListener('click', () => this.useHint());
@@ -256,7 +253,6 @@ class AlgorithmMaster {
     showScreen(screenName) {
         console.log(`Showing screen: ${screenName}`);
         
-        // Hide all screens
         const screens = ['splashScreen', 'mainMenu', 'categorySelect', 'gamePlay', 'resultsScreen'];
         screens.forEach(screen => {
             const element = document.getElementById(screen);
