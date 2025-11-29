@@ -319,7 +319,6 @@ class AlgorithmMaster {
             categoryGrid.appendChild(card);
         });
 
-        // Initialize difficulty and algorithm options
         this.initDifficultyOptions();
         this.initAlgorithmOptions();
     }
@@ -361,7 +360,6 @@ class AlgorithmMaster {
             container.appendChild(option);
         });
 
-        // Select default algorithm
         this.selectAlgorithm('horspool');
     }
 
@@ -467,20 +465,16 @@ class AlgorithmMaster {
         const game = this.gameState.currentGame;
         const categoryData = this.gameData.categories[game.category];
         
-        // Update header info
         this.updateElement('gameCategory', categoryData.name);
         this.updateElement('gameDifficulty', game.difficulty);
         this.updateElement('currentScore', game.score);
         this.updateElement('gameTimer', game.timeRemaining);
         this.updateElement('wordsRemaining', game.words.length);
 
-        // Display game text
         this.updateElement('gameText', game.textBlock);
 
-        // Display scrambled words
         this.displayScrambledWords();
 
-        // Update algorithm display
         const algorithmData = this.gameData.algorithms[game.algorithm];
         this.updateElement('currentAlgorithm', `${algorithmData.name} Algorithm`);
 
